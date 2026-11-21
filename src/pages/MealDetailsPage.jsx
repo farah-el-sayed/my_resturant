@@ -12,6 +12,8 @@ import {
   translateMeasure,
   translateMealInstructions,
   translateInstructionText,
+  translateIngredientText,
+  translateMealNameText,
 } from "../translations";
 
 // Collect ingredients and measures
@@ -67,6 +69,8 @@ export default function MealDetailsPage({ mealId }) {
   const [showAllSteps, setShowAllSteps] = useState(false);
   const [dynamicTranslatedSteps, setDynamicTranslatedSteps] = useState(null);
   const [isTranslatingSteps, setIsTranslatingSteps] = useState(false);
+  const [dynamicTranslatedIngredients, setDynamicTranslatedIngredients] = useState({});
+  const [dynamicTranslatedMealName, setDynamicTranslatedMealName] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -92,6 +96,52 @@ export default function MealDetailsPage({ mealId }) {
   useEffect(() => {
     let isCurrent = true;
 
+    async function translateName() {
+      if (!meal || i18n.language !== "ar") {
+        setDynamicTranslatedMealName(meal?.strMeal || "");
+        return;
+      }
+
+      const translated = await translateMealNameText(meal.strMeal, meal.idMeal);
+      if (isCurrent) setDynamicTranslatedMealName(translated);
+    }
+
+    translateName();
+    return () => {
+      isCurrent = false;
+    };
+  }, [i18n.language, meal]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function translateIngredients() {
+      if (i18n.language !== "ar" || !meal) {
+        setDynamicTranslatedIngredients({});
+        return;
+      }
+
+      const entries = await Promise.all(
+        getIngredients(meal).map(async ({ name }) => [
+          name,
+          await translateIngredientText(name),
+        ])
+      );
+
+      if (isCurrent) {
+        setDynamicTranslatedIngredients(Object.fromEntries(entries));
+      }
+    }
+
+    translateIngredients();
+    return () => {
+      isCurrent = false;
+    };
+  }, [i18n.language, meal]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
     async function translateSteps() {
       if (i18n.language !== "ar" || !meal?.strInstructions) {
         setDynamicTranslatedSteps(null);
@@ -101,7 +151,8 @@ export default function MealDetailsPage({ mealId }) {
 
       const curatedSteps = translateMealInstructions(
         meal.strMeal,
-        i18n.language
+        i18n.language,
+        meal.idMeal
       );
 
       if (curatedSteps) {
@@ -188,7 +239,10 @@ export default function MealDetailsPage({ mealId }) {
 
         <div>
           <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
-            {translateMealName(meal.strMeal, i18n.language)}
+            {i18n.language === "ar"
+              ? dynamicTranslatedMealName ||
+                translateMealName(meal.strMeal, i18n.language, meal.idMeal)
+              : meal.strMeal}
           </h1>
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -266,7 +320,10 @@ export default function MealDetailsPage({ mealId }) {
 
               <span className="text-gray-800">
                 <span className="font-medium">
-                  {translateIngredient(ing.name, i18n.language)}
+                  {i18n.language === "ar"
+                    ? dynamicTranslatedIngredients[ing.name] ||
+                      translateIngredient(ing.name, i18n.language)
+                    : ing.name}
                 </span>
 
                 {ing.measure && (

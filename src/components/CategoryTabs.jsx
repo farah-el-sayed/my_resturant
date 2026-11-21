@@ -1,9 +1,8 @@
-import { useTranslation } from "react-i18next";
 import { translateCategory } from "../translations";
+import { useTranslation } from "react-i18next";
 
 export default function CategoryTabs({ categories, active, onSelect }) {
   const { t, i18n } = useTranslation();
-
   return (
     <div className="my-2 flex flex-wrap gap-2">
       <button

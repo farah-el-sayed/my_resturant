@@ -1,12 +1,33 @@
 
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { slugify } from "../api";
 import { useTranslation } from "react-i18next";
-import { translateMealName } from "../translations";
+import { translateMealName, translateMealNameText } from "../translations";
 
 export default function MealCard({ meal, category }) {
   const { t, i18n } = useTranslation();
+  const [translatedName, setTranslatedName] = useState("");
   const mealCategory = meal.strCategory || category;
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function translateName() {
+      if (i18n.language !== "ar") {
+        setTranslatedName(meal.strMeal);
+        return;
+      }
+
+      const translated = await translateMealNameText(meal.strMeal, meal.idMeal);
+      if (isCurrent) setTranslatedName(translated);
+    }
+
+    translateName();
+    return () => {
+      isCurrent = false;
+    };
+  }, [i18n.language, meal.idMeal, meal.strMeal]);
 
   const mealPath = `/meal/${slugify(
     mealCategory
@@ -23,7 +44,9 @@ export default function MealCard({ meal, category }) {
 
       <div className="flex flex-1 flex-col p-4">
         <h3 className="text-center text-lg font-bold italic text-gray-900 min-h-14">
-          {translateMealName(meal.strMeal, i18n.language)}
+          {i18n.language === "ar"
+            ? translatedName || translateMealName(meal.strMeal, i18n.language, meal.idMeal)
+            : meal.strMeal}
         </h3>
 
         <Link

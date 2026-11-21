@@ -42,13 +42,12 @@ export default function Header() {
           >
             {isArabic ? "EN" : "AR"}
           </button>
-
           <button
             type="button"
             onClick={() => setTheme((value) => value === "light" ? "dark" : "light")}
             className="header-theme-btn rounded-lg px-3 py-2 text-base transition"
-            aria-label={theme === "light" ? t("darkMode") : t("lightMode")}
-            title={theme === "light" ? t("darkMode") : t("lightMode")}
+            aria-label={theme === "light" ? "تفعيل الوضع الليلي" : "تفعيل الوضع النهاري"}
+            title={theme === "light" ? "تفعيل الوضع الليلي" : "تفعيل الوضع النهاري"}
           >
             {theme === "light" ? "🌙" : "☀️"}
           </button>

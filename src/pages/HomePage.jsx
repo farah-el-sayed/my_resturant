@@ -9,9 +9,28 @@ import {
 import CategoryTabs from "../components/CategoryTabs";
 import MealCard from "../components/MealCard";
 import { useTranslation } from "react-i18next";
+import {
+  translateMealName,
+  translateMealNameText,
+} from "../translations";
 
 
-const INITIAL_MEALS_COUNT = 6;
+const INITIAL_MEALS_COUNT = 3;
+const MEALS_PER_PAGE = 3;
+
+function normalizeSearchText(value) {
+  return (value || "")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -24,11 +43,47 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(INITIAL_MEALS_COUNT);
+  const [translatedMealNames, setTranslatedMealNames] = useState({});
 
-  const normalizedQuery = searchTitle.trim().toLowerCase();
-  const filteredMeals = meals.filter((meal) =>
-    meal.strMeal?.toLowerCase().includes(normalizedQuery) ?? false
-  );
+  const normalizedQuery = normalizeSearchText(searchTitle);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function translateNames() {
+      const entries = await Promise.all(
+        meals.map(async (meal) => [
+          meal.idMeal,
+          await translateMealNameText(meal.strMeal, meal.idMeal),
+        ])
+      );
+      if (isCurrent) {
+        setTranslatedMealNames(Object.fromEntries(entries));
+      }
+    }
+
+    if (meals.length > 0) translateNames();
+    else setTranslatedMealNames({});
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [meals]);
+
+  const filteredMeals = meals.filter((meal) => {
+    const arabicName =
+      translatedMealNames[meal.idMeal] ||
+      translateMealName(meal.strMeal, "ar", meal.idMeal);
+    const normalizedEnglishName = normalizeSearchText(meal.strMeal);
+    const normalizedArabicName = normalizeSearchText(arabicName);
+    const searchableNames = [
+      normalizedEnglishName,
+      normalizedArabicName,
+    ].filter(Boolean);
+
+    if (!normalizedQuery) return true;
+    return searchableNames.some((name) => name.includes(normalizedQuery));
+  });
   const visibleMeals = filteredMeals.slice(0, visibleCount);
 
   // Reset the visible amount whenever the dataset or the search term changes.
@@ -129,7 +184,7 @@ export default function HomePage() {
                   setVisibleCount((count) =>
                     count >= filteredMeals.length
                       ? INITIAL_MEALS_COUNT
-                      : filteredMeals.length
+                      : Math.min(count + MEALS_PER_PAGE, filteredMeals.length)
                   )
                 }
                 className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-gray-200 px-4 py-2 font-semibold text-gray-800 transition-colors duration-300 hover:bg-white hover:text-gray-900"

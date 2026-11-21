@@ -81,6 +81,7 @@ export default function OfflineGate() {
       <Suspense fallback={<p className="text-sm text-white/60">{t("loadingGame")}</p>}>
         <OfflineGame />
       </Suspense>
+
     </div>
   );
 }

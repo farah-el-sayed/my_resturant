@@ -1,6 +1,6 @@
 # Meals App
 
-Meals App is an interactive recipe website built with React, Vite, Tailwind CSS, React Router, and i18next. It retrieves meal categories and recipe details from **TheMealDB API** and provides search, responsive meal cards, dynamic recipe routes, English and Arabic languages, light and dark themes, and an offline fallback game.
+Meals App is an Arabic interactive recipe website built with React, Vite, Tailwind CSS, and React Router. It retrieves meal categories and recipe details from **TheMealDB API** and provides search, responsive meal cards, dynamic recipe routes, light and dark themes, and an offline fallback game.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ Meals App is an interactive recipe website built with React, Vite, Tailwind CSS,
 - [Routing](#routing)
 - [API Integration](#api-integration)
 - [Environment Variables](#environment-variables)
-- [Internationalization](#internationalization)
+- [Arabic Interface](#arabic-interface)
 - [Meal and Instruction Translation](#meal-and-instruction-translation)
 - [Light and Dark Themes](#light-and-dark-themes)
 - [Offline Mode](#offline-mode)
@@ -28,16 +28,13 @@ Meals App is an interactive recipe website built with React, Vite, Tailwind CSS,
 - Browse all available meals.
 - Filter meals by category.
 - Search meals by title.
-- Display six meal cards initially, with a Show More option.
+- Display three meal cards initially, with gradual Show More batches.
 - Open every meal in a dedicated details page.
 - View meal images, categories, countries, tags, ingredients, quantities, and instructions.
 - Open YouTube and original recipe-source links.
-- Switch between English and Arabic.
-- Automatically change page direction:
-  - Arabic: RTL
-  - English: LTR
+- Use a fixed Arabic RTL interface.
 - Switch between light and dark themes.
-- Remember language, theme, and the best Snake score.
+- Remember the theme and the best Snake score.
 - Detect actual internet loss and display an offline game.
 - Continue checking connectivity and close the offline screen after reconnecting.
 
@@ -49,8 +46,6 @@ Meals App is an interactive recipe website built with React, Vite, Tailwind CSS,
 | Vite 6 | Development server and production builds |
 | React Router DOM 6 | Page navigation and dynamic routes |
 | Tailwind CSS 4 | Responsive utility-first styling |
-| i18next | Translation management |
-| react-i18next | React integration for i18next |
 | JavaScript | Application logic |
 | CSS | Theme overrides and additional styling |
 | TheMealDB | Meal, category, ingredient, and instruction data |
@@ -112,7 +107,6 @@ resturant/
 │   │   └── MealDetailsPage.jsx
 │   ├── App.jsx
 │   ├── api.js
-│   ├── i18n.js
 │   ├── index.css
 │   ├── main.jsx
 │   └── translations.js
@@ -162,10 +156,9 @@ It includes:
 `src/components/Header.jsx` contains:
 
 - The application name.
-- The language-switching button.
 - The light/dark theme button.
-- Direction updates for `html`.
-- Browser storage for language and theme preferences.
+- Arabic RTL direction for `html`.
+- Browser storage for the theme preference.
 
 ### Category Tabs
 
@@ -281,38 +274,16 @@ Copy-Item .env.example .env
 
 The `.env` file is excluded from Git. Restart the Vite development server after changing environment variables.
 
-## Internationalization
+## Arabic Interface
 
-The application supports English and Arabic using i18next.
+The application uses a fixed Arabic RTL interface.
 
-`src/i18n.js` contains:
-
-- Shared English and Arabic interface translations.
-- The saved language preference.
-- English as the fallback language.
-- React-i18next initialization.
-
-Arabic sets:
+The document direction is set in `src/main.jsx`:
 
 ```text
 document.documentElement.lang = "ar"
 document.documentElement.dir = "rtl"
 ```
-
-English sets:
-
-```text
-document.documentElement.lang = "en"
-document.documentElement.dir = "ltr"
-```
-
-The selected language is saved under:
-
-```text
-language
-```
-
-Supported values are `ar` and `en`.
 
 ## Meal and Instruction Translation
 
@@ -384,7 +355,6 @@ The connection test uses a no-cache request to Google's `generate_204` endpoint.
 
 | Key | Value |
 |---|---|
-| `language` | Selected language: `ar` or `en` |
 | `theme` | Selected theme: `light` or `dark` |
 | `snake-best` | Highest Snake score |
 | `instruction:<text>` | Cached Arabic instruction text |
